@@ -57,4 +57,44 @@ describe("Add to Duo button functionality", () => {
   });
 });
 
+describe("Remove from Duo button functionality", () => {
+  test("when a bot is 'Removed from Duo', it goes back to 'choices'", async () => {
+    await driver.get("http://localhost:8000");
+
+    // Click the Draw button to get some bots
+    const drawButton = await driver.findElement(By.id("draw"));
+    await drawButton.click();
+
+    // Find and click the "Add to Duo" button for the first bot
+    const addToDuoButtons = await driver.findElements(By.className("bot-btn"));
+    if (addToDuoButtons.length > 0) {
+      const firstAddToDuoButton = addToDuoButtons[0];
+      await firstAddToDuoButton.click();
+
+      // Check if the div with id 'player-duo' is displayed
+      const playerDuoDiv = await driver.findElement(By.id("player-duo"));
+      const isPlayerDuoDisplayed = await playerDuoDiv.isDisplayed();
+      expect(isPlayerDuoDisplayed).toBe(true);
+
+      // Find and click the "Remove from Duo" button for the first bot in 'player-duo'
+      const removeFromDuoButtons = await driver.findElements(By.xpath("//div[@id='player-duo']//button[contains(text(), 'Remove from Duo')]"));
+      if (removeFromDuoButtons.length > 0) {
+        const firstRemoveFromDuoButton = removeFromDuoButtons[0];
+        await firstRemoveFromDuoButton.click();
+
+        // Check if the bot is removed and back to 'choices'
+        const choicesDiv = await driver.findElement(By.id("choices"));
+        const isChoicesDisplayed = await choicesDiv.isDisplayed();
+        expect(isChoicesDisplayed).toBe(true);
+      } else {
+        // If no bot available to remove, the test will fail
+        throw new Error("No bot available to remove from Duo.");
+      }
+    } else {
+      // If no bot available to add to Duo, the test will fail
+      throw new Error("No bot available to add to Duo.");
+    }
+  });
+});
+
 

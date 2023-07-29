@@ -12,6 +12,17 @@ app.use(express.json());
 
 app.use(express.static(`${__dirname}/public`));
 
+// include and initialize the rollbar library with your access token
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: 'fa0e6d8cd7ba4f179367dc0863496a04',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
+
+// record a generic message and send it to Rollbar
+rollbar.log('Hello world!')
+
 // Add up the total health of all the robots
 const calculateTotalHealth = (robots) =>
   robots.reduce((total, { health }) => total + health, 0);
@@ -39,6 +50,7 @@ const calculateHealthAfterAttack = ({ playerDuo, compDuo }) => {
 
 app.get("/api/robots", (req, res) => {
   try {
+    rollbar.info("Cards Presented for selection.")
     res.status(200).send(botsArr);
   } catch (error) {
     console.error("ERROR GETTING BOTS", error);
@@ -49,6 +61,7 @@ app.get("/api/robots", (req, res) => {
 app.get("/api/robots/shuffled", (req, res) => {
   try {
     let shuffled = shuffle(bots);
+    rollbar.info("Cards got presented to duel.")
     res.status(200).send(shuffled);
   } catch (error) {
     console.error("ERROR GETTING SHUFFLED BOTS", error);
@@ -68,9 +81,11 @@ app.post("/api/duel", (req, res) => {
     // comparing the total health to determine a winner
     if (compHealth > playerHealth) {
       playerRecord.losses += 1;
+      rollbar.info("Someone LOST a duel.")
       res.status(200).send("You lost!");
     } else {
       playerRecord.losses += 1;
+      rollbar.info("Someone WON a duel.")
       res.status(200).send("You won!");
     }
   } catch (error) {
